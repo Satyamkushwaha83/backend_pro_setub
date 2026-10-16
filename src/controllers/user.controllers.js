@@ -73,6 +73,7 @@ const registerUser = asyncHandler(async (req, res) => {
         "-password -refreshToken"
     );
 
+<<<<<<< HEAD
     if (!createdUser) {
         throw new ApiError(
             500,
@@ -91,3 +92,48 @@ const registerUser = asyncHandler(async (req, res) => {
 });
 
 export { registerUser };
+=======
+const avatarLocalPath = req.files?.avatar[0]?.path;
+if(!avatarLocalPath){
+        throw new ApiError(400 , "Avatar  file is required!");
+   }
+const avatar = await uploadOnCloudinary(avatarLocalPath);
+if (!avatar || !avatar.secure_url) {
+    throw new ApiError(501, "Avatar upload to Cloudinary failed!");
+}
+console.log(avatar.url);
+
+ 
+let coverImageLocalPath; 
+if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0){
+   coverImageLocalPath = req.files.coverImage[0].path
+} 
+const coverImage = await uploadOnCloudinary(coverImageLocalPath);
+
+
+const user = await User.create({
+  fullName,
+  avatar: avatar.url,
+  coverImage: coverImage?.url || "",
+   email,
+   password,
+   username: username.toLowerCase()
+})
+const createdUser = await User.findById(user._id).select(
+"-password -refreshToken"
+)
+if(!createdUser){
+  throw new ApiError(500, "Something went wrong while registering the user")
+}
+
+return res.status(201).json(
+  new ApiResponse(200, createdUser, "User registered Sucessfully")
+)
+})
+//we can also create this type
+// if (fullName === "") {
+//     throw new ApiError(400, " fullname is required")
+// }
+
+export { registerUser };
+>>>>>>> f2bc271ab7a03768531eec694cef192573073ea7
